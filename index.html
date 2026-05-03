@@ -1,12 +1,396 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>내 웹페이지</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>이사 준비 캘린더</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.css" rel="stylesheet">
+  <style>
+    :root, [data-theme="light"] {
+      --text-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
+      --text-sm: clamp(0.875rem, 0.8rem + 0.35vw, 1rem);
+      --text-base: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
+      --text-lg: clamp(1.125rem, 1rem + 0.75vw, 1.5rem);
+      --text-xl: clamp(1.5rem, 1.2rem + 1.25vw, 2.25rem);
+      --space-1: 0.25rem; --space-2: 0.5rem; --space-3: 0.75rem; --space-4: 1rem; --space-5: 1.25rem; --space-6: 1.5rem; --space-8: 2rem; --space-10: 2.5rem; --space-12: 3rem;
+      --color-bg: #f7f6f2; --color-surface: #f9f8f5; --color-surface-2: #fbfbf9; --color-surface-offset: #f3f0ec; --color-border: #d4d1ca; --color-divider: #dcd9d5;
+      --color-text: #28251d; --color-text-muted: #6f6b63; --color-text-faint: #9d998f; --color-text-inverse: #f9f8f4;
+      --color-primary: #01696f; --color-primary-hover: #0c4e54; --color-primary-highlight: #cedcd8; --color-success: #437a22; --color-error: #a12c7b; --color-blue: #006494; --color-gold: #d19900; --color-orange: #da7101; --color-purple: #7a39bb;
+      --radius-sm: 0.375rem; --radius-md: 0.625rem; --radius-lg: 0.875rem; --radius-xl: 1rem; --radius-full: 9999px;
+      --shadow-sm: 0 1px 2px rgba(20, 18, 15, 0.06); --shadow-md: 0 8px 24px rgba(20, 18, 15, 0.10); --transition: 180ms cubic-bezier(0.16, 1, 0.3, 1);
+      --font-display: 'Instrument Sans', 'Noto Sans KR', sans-serif; --font-body: 'Noto Sans KR', 'Apple SD Gothic Neo', sans-serif;
+    }
+    [data-theme="dark"] {
+      --color-bg: #171614; --color-surface: #1c1b19; --color-surface-2: #201f1d; --color-surface-offset: #22211f; --color-border: #393836; --color-divider: #262523;
+      --color-text: #e3e1dd; --color-text-muted: #b4b0aa; --color-text-faint: #7c7973; --color-text-inverse: #171614;
+      --color-primary: #4f98a3; --color-primary-hover: #227f8b; --color-primary-highlight: #313b3b; --shadow-sm: 0 1px 2px rgba(0,0,0,0.2); --shadow-md: 0 10px 30px rgba(0,0,0,0.35);
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    html{-webkit-text-size-adjust:none;text-size-adjust:none;scroll-behavior:smooth}
+    body{min-height:100dvh;font-family:var(--font-body);font-size:var(--text-base);line-height:1.5;background:var(--color-bg);color:var(--color-text)}
+    button,input,select,textarea{font:inherit;color:inherit}
+    button{border:0;background:none;cursor:pointer}
+    .app{max-width:480px;min-height:100dvh;margin:0 auto;background:var(--color-bg);padding-bottom:5.5rem}
+    .topbar{position:sticky;top:0;z-index:20;padding:calc(env(safe-area-inset-top) + 0.75rem) var(--space-4) var(--space-3);background:color-mix(in srgb, var(--color-bg) 88%, transparent);backdrop-filter:blur(12px);border-bottom:1px solid color-mix(in srgb, var(--color-text) 10%, transparent)}
+    .logo{display:flex;align-items:center;gap:0.75rem;margin-bottom:var(--space-3)}
+    .logo-mark{width:2.5rem;height:2.5rem;border-radius:0.8rem;background:linear-gradient(135deg,var(--color-primary),color-mix(in srgb, var(--color-primary) 55%, white));display:grid;place-items:center;color:white;box-shadow:var(--shadow-sm)}
+    .logo h1{font-family:var(--font-display);font-size:var(--text-lg);line-height:1.1}
+    .logo p{font-size:var(--text-xs);color:var(--color-text-muted)}
+    .toolbar{display:flex;gap:0.5rem;align-items:center}
+    .chip-scroll{display:flex;gap:0.5rem;overflow:auto;padding-bottom:0.125rem;scrollbar-width:none}
+    .chip-scroll::-webkit-scrollbar{display:none}
+    .chip{white-space:nowrap;padding:0.625rem 0.9rem;border:1px solid color-mix(in srgb,var(--color-text) 12%, transparent);border-radius:var(--radius-full);background:var(--color-surface);font-size:var(--text-sm);color:var(--color-text-muted)}
+    .chip.active{background:var(--color-primary);color:var(--color-text-inverse);border-color:var(--color-primary)}
+    .shell{padding:var(--space-4)}
+    .hero-card,.panel,.legend-card{background:var(--color-surface);border:1px solid color-mix(in srgb,var(--color-text) 10%, transparent);border-radius:var(--radius-xl);box-shadow:var(--shadow-sm)}
+    .hero-card{padding:var(--space-4);display:grid;gap:var(--space-3);margin-bottom:var(--space-4)}
+    .hero-title{display:flex;justify-content:space-between;align-items:flex-start;gap:var(--space-3)}
+    .hero-title h2{font-size:var(--text-xl);font-family:var(--font-display);line-height:1.05}
+    .hero-title button,.icon-btn{width:2.75rem;height:2.75rem;border-radius:0.9rem;background:var(--color-surface-offset);display:grid;place-items:center;border:1px solid color-mix(in srgb,var(--color-text) 8%, transparent)}
+    .summary{display:grid;grid-template-columns:repeat(3,1fr);gap:0.75rem}
+    .metric{padding:0.85rem;border-radius:var(--radius-lg);background:var(--color-surface-2)}
+    .metric span{display:block;font-size:var(--text-xs);color:var(--color-text-muted);margin-bottom:0.25rem}
+    .metric strong{font-size:var(--text-lg);font-family:var(--font-display)}
+    .panel{padding:var(--space-3)}
+    #calendar{margin-top:var(--space-2)}
+    .fc .fc-toolbar{display:flex;gap:0.5rem;align-items:center;justify-content:space-between;margin-bottom:0.75rem}
+    .fc .fc-toolbar-title{font-size:1.05rem;font-family:var(--font-display)}
+    .fc .fc-button{background:var(--color-surface-offset)!important;border:1px solid color-mix(in srgb,var(--color-text) 10%, transparent)!important;color:var(--color-text)!important;border-radius:0.75rem!important;padding:0.5rem 0.65rem!important;box-shadow:none!important}
+    .fc .fc-daygrid-day-frame{min-height:4.4rem}
+    .fc .fc-col-header-cell-cushion,.fc .fc-daygrid-day-number{color:var(--color-text);text-decoration:none;font-size:0.82rem;padding:0.35rem}
+    .fc-theme-standard td,.fc-theme-standard th{border-color:color-mix(in srgb,var(--color-text) 10%, transparent)}
+    .fc .fc-day-today{background:color-mix(in srgb,var(--color-primary) 10%, transparent)!important}
+    .fc-event{border:none!important;border-radius:0.65rem!important;padding:0.18rem 0.35rem!important;font-size:0.78rem!important}
+    .legend-card{padding:var(--space-4);margin-top:var(--space-4)}
+    .legend-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:0.75rem;margin-top:0.9rem}
+    .legend-item{display:flex;align-items:center;gap:0.5rem;font-size:var(--text-sm);color:var(--color-text-muted)}
+    .dot{width:0.75rem;height:0.75rem;border-radius:var(--radius-full)}
+    .fab{position:fixed;right:1rem;bottom:calc(env(safe-area-inset-bottom) + 1rem);z-index:30;display:flex;align-items:center;gap:0.55rem;padding:0.95rem 1.1rem;border-radius:var(--radius-full);background:var(--color-primary);color:var(--color-text-inverse);box-shadow:var(--shadow-md)}
+    .drawer-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.28);opacity:0;pointer-events:none;transition:opacity var(--transition);z-index:39}
+    .drawer{position:fixed;left:0;right:0;bottom:0;z-index:40;background:var(--color-surface);border-radius:1.4rem 1.4rem 0 0;box-shadow:var(--shadow-md);transform:translateY(102%);transition:transform var(--transition);max-width:480px;margin:0 auto;max-height:88dvh;display:flex;flex-direction:column}
+    .drawer.open{transform:translateY(0)} .drawer-backdrop.open{opacity:1;pointer-events:auto}
+    .drawer-handle{width:3rem;height:0.3rem;border-radius:99px;background:var(--color-border);margin:0.75rem auto 0.4rem}
+    .drawer-head{display:flex;justify-content:space-between;align-items:center;padding:0 var(--space-4) var(--space-3)}
+    .drawer-head h3{font-size:var(--text-lg);font-family:var(--font-display)}
+    .drawer-body{overflow:auto;padding:0 var(--space-4) calc(env(safe-area-inset-bottom) + 1rem);display:grid;gap:1rem}
+    .field{display:grid;gap:0.42rem}.field label{font-size:var(--text-sm);color:var(--color-text-muted)}
+    .input,.textarea,.select{width:100%;background:var(--color-surface-2);border:1px solid color-mix(in srgb,var(--color-text) 10%, transparent);border-radius:0.9rem;padding:0.9rem 0.95rem}
+    .textarea{min-height:7.5rem;resize:vertical}
+    .row-2{display:grid;grid-template-columns:1fr 1fr;gap:0.75rem}
+    .check-row{display:flex;justify-content:space-between;align-items:center;padding:0.9rem 1rem;border-radius:0.9rem;background:var(--color-surface-2);border:1px solid color-mix(in srgb,var(--color-text) 10%, transparent)}
+    .toggle{width:1.3rem;height:1.3rem}
+    .actions{display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;padding-bottom:1rem}
+    .btn{padding:0.95rem 1rem;border-radius:0.95rem;font-weight:700}
+    .btn-primary{background:var(--color-primary);color:var(--color-text-inverse)}
+    .btn-secondary{background:var(--color-surface-offset);border:1px solid color-mix(in srgb,var(--color-text) 10%, transparent)}
+    .note{font-size:var(--text-xs);color:var(--color-text-muted);background:var(--color-surface-offset);padding:0.85rem 0.95rem;border-radius:0.85rem}
+    @media (min-width: 768px){.app,.drawer{max-width:920px}.shell{display:grid;grid-template-columns:minmax(0,1fr) 270px;gap:1rem}.legend-card{margin-top:0}.hero-card{grid-column:1/-1}.fab{right:calc(50% - 430px)}}
+  </style>
 </head>
 <body>
-  <h1>안녕하세요</h1>
-  <p>이 페이지는 GitHub로 만든 첫 웹페이지입니다!.</p>
+  <div class="drawer-backdrop" id="drawerBackdrop"></div>
+  <div class="app">
+    <header class="topbar">
+      <div class="logo">
+        <div class="logo-mark" aria-label="로고">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M7 3v4M17 3v4M4 9h16"/>
+            <rect x="4" y="5" width="16" height="15" rx="3"/>
+            <path d="M9 14l2 2 4-4"/>
+          </svg>
+        </div>
+        <div>
+          <h1>이사 준비 보드</h1>
+          <p>부부 공동 편집 · Google Sheets 연동 초안</p>
+        </div>
+      </div>
+      <div class="toolbar">
+        <div class="chip-scroll" id="categoryFilters"></div>
+        <button class="icon-btn" id="themeToggle" aria-label="테마 변경">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+        </button>
+      </div>
+    </header>
+
+    <main class="shell">
+      <section class="hero-card">
+        <div class="hero-title">
+          <div>
+            <p style="font-size:var(--text-sm);color:var(--color-text-muted);margin-bottom:0.35rem;">모바일 우선 진행 현황</p>
+            <h2>이사 전까지<br>해야 할 일 한눈에</h2>
+          </div>
+          <button id="quickAddBtn" aria-label="일정 추가">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+          </button>
+        </div>
+        <div class="summary">
+          <div class="metric"><span>전체 일정</span><strong id="totalCount">0</strong></div>
+          <div class="metric"><span>완료</span><strong id="doneCount">0</strong></div>
+          <div class="metric"><span>남은 일정</span><strong id="todoCount">0</strong></div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div id="calendar"></div>
+      </section>
+
+      <aside class="legend-card">
+        <h3 style="font-size:var(--text-lg);font-family:var(--font-display);">기본 카테고리</h3>
+        <div class="legend-grid" id="legend"></div>
+        <div class="note" style="margin-top:1rem;">초안 단계에서는 카테고리를 넉넉히 넣어두었습니다. 실제 적용 시 필요 없는 항목은 삭제하고, 은행명·업체명 중심 카테고리로 바꿔도 됩니다.</div>
+      </aside>
+    </main>
+  </div>
+
+  <button class="fab" id="fabAdd" aria-label="일정 추가">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+    <span>일정 추가</span>
+  </button>
+
+  <section class="drawer" id="eventDrawer" aria-hidden="true">
+    <div class="drawer-handle"></div>
+    <div class="drawer-head">
+      <h3 id="drawerTitle">일정 추가</h3>
+      <button class="icon-btn" id="closeDrawer" aria-label="닫기">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="drawer-body">
+      <div class="check-row">
+        <div>
+          <strong style="display:block;">완료 처리</strong>
+          <span style="font-size:var(--text-xs);color:var(--color-text-muted);">체크하면 시트의 완료 상태도 함께 갱신</span>
+        </div>
+        <input type="checkbox" class="toggle" id="eventDone">
+      </div>
+      <div class="field">
+        <label for="eventTitle">일정명</label>
+        <input class="input" id="eventTitle" placeholder="예: 우리은행 대출 실행 서류 준비">
+      </div>
+      <div class="row-2">
+        <div class="field"><label for="eventStart">시작일</label><input class="input" id="eventStart" type="date"></div>
+        <div class="field"><label for="eventEnd">종료일</label><input class="input" id="eventEnd" type="date"></div>
+      </div>
+      <div class="row-2">
+        <div class="field"><label for="eventCategory">카테고리</label><select class="select" id="eventCategory"></select></div>
+        <div class="field"><label for="eventOwner">담당</label><select class="select" id="eventOwner"><option>나</option><option>와이프</option><option>같이</option></select></div>
+      </div>
+      <div class="row-2">
+        <div class="field"><label for="eventPriority">우선순위</label><select class="select" id="eventPriority"><option>높음</option><option selected>보통</option><option>낮음</option></select></div>
+        <div class="field"><label for="eventVendor">관련 기관/업체</label><input class="input" id="eventVendor" placeholder="예: 우리은행"></div>
+      </div>
+      <div class="field">
+        <label for="eventDetail">세부 내용</label>
+        <textarea class="textarea" id="eventDetail" placeholder="필요 서류, 담당자, 체크포인트, 통화 내용 등을 적어두세요."></textarea>
+      </div>
+      <div class="actions">
+        <button class="btn btn-secondary" id="deleteBtn">삭제</button>
+        <button class="btn btn-primary" id="saveBtn">저장</button>
+      </div>
+      <div class="note">
+        Apps Script 연동 시 저장 버튼은 Google Sheets의 행을 생성/수정하고, 삭제 버튼은 해당 ID 기준으로 행을 삭제하도록 연결하면 됩니다.
+      </div>
+    </div>
+  </section>
+
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
+  <script>
+    const categories = [
+      { name: '전체', color: '#01696f' },
+      { name: '이사', color: '#01696f' },
+      { name: '대출', color: '#006494' },
+      { name: '인테리어', color: '#da7101' },
+      { name: '청소', color: '#437a22' },
+      { name: '계약', color: '#7a39bb' },
+      { name: '주소변경', color: '#d19900' },
+      { name: '가전/가구', color: '#a12c7b' },
+      { name: '행정', color: '#964219' },
+      { name: '업체미팅', color: '#4f98a3' },
+      { name: '기타', color: '#7a7974' }
+    ];
+
+    const sampleEvents = [
+      { id: '1', title: '우리은행 대출', start: '2026-04-05', end: '2026-04-09', allDay: true, extendedProps: { category: '대출', owner: '같이', priority: '높음', vendor: '우리은행', done: false, detail: '대출 실행 조건 확인, 인감/등본/신분증 사본 준비, 실행일 최종 확인.' } },
+      { id: '2', title: '도배/걸레받이 실측', start: '2026-04-10', end: '2026-04-10', allDay: true, extendedProps: { category: '인테리어', owner: '나', priority: '보통', vendor: '부분 시공 업체', done: false, detail: '안방/작은방/복도 실측 후 견적 비교.' } },
+      { id: '3', title: '이삿짐 업체 확정', start: '2026-04-14', end: '2026-04-14', allDay: true, extendedProps: { category: '이사', owner: '같이', priority: '높음', vendor: '포장이사 업체', done: true, detail: '견적 3곳 비교 후 계약금 송금 완료.' } },
+      { id: '4', title: '전입/주소 변경 체크', start: '2026-04-21', end: '2026-04-22', allDay: true, extendedProps: { category: '주소변경', owner: '와이프', priority: '보통', vendor: '정부24/카드사', done: false, detail: '은행, 카드, 보험, 차량 등록 주소 변경 목록 정리.' } },
+      { id: '5', title: '입주 청소 일정', start: '2026-04-24', end: '2026-04-24', allDay: true, extendedProps: { category: '청소', owner: '나', priority: '보통', vendor: '입주청소 업체', done: false, detail: '오전 9시 시작, 하자 확인 병행.' } }
+    ];
+
+    let selectedCategory = '전체';
+    let currentEventId = null;
+    let calendar;
+
+    const els = {
+      filters: document.getElementById('categoryFilters'),
+      legend: document.getElementById('legend'),
+      drawer: document.getElementById('eventDrawer'),
+      backdrop: document.getElementById('drawerBackdrop'),
+      drawerTitle: document.getElementById('drawerTitle'),
+      deleteBtn: document.getElementById('deleteBtn'),
+      title: document.getElementById('eventTitle'),
+      start: document.getElementById('eventStart'),
+      end: document.getElementById('eventEnd'),
+      category: document.getElementById('eventCategory'),
+      owner: document.getElementById('eventOwner'),
+      priority: document.getElementById('eventPriority'),
+      vendor: document.getElementById('eventVendor'),
+      detail: document.getElementById('eventDetail'),
+      done: document.getElementById('eventDone'),
+      total: document.getElementById('totalCount'),
+      doneCount: document.getElementById('doneCount'),
+      todo: document.getElementById('todoCount')
+    };
+
+    function colorOf(category) {
+      return categories.find(c => c.name === category)?.color || '#01696f';
+    }
+
+    function renderFilters() {
+      els.filters.innerHTML = '';
+      categories.forEach(cat => {
+        const btn = document.createElement('button');
+        btn.className = 'chip' + (cat.name === selectedCategory ? ' active' : '');
+        btn.textContent = cat.name;
+        btn.addEventListener('click', () => {
+          selectedCategory = cat.name;
+          renderFilters();
+          reloadCalendar();
+        });
+        els.filters.appendChild(btn);
+      });
+    }
+
+    function renderLegend() {
+      els.legend.innerHTML = '';
+      categories.filter(c => c.name !== '전체').forEach(cat => {
+        const item = document.createElement('div');
+        item.className = 'legend-item';
+        item.innerHTML = `<span class="dot" style="background:${cat.color}"></span><span>${cat.name}</span>`;
+        els.legend.appendChild(item);
+      });
+      els.category.innerHTML = categories.filter(c => c.name !== '전체').map(cat => `<option>${cat.name}</option>`).join('');
+    }
+
+    function getEvents() {
+      return sampleEvents.filter(ev => selectedCategory === '전체' || ev.extendedProps.category === selectedCategory)
+        .map(ev => ({
+          ...ev,
+          backgroundColor: ev.extendedProps.done ? '#437a22' : colorOf(ev.extendedProps.category),
+          textColor: '#ffffff'
+        }));
+    }
+
+    function updateSummary() {
+      const total = sampleEvents.length;
+      const done = sampleEvents.filter(e => e.extendedProps.done).length;
+      els.total.textContent = total;
+      els.doneCount.textContent = done;
+      els.todo.textContent = total - done;
+    }
+
+    function openDrawer(eventData = null, startDate = null) {
+      currentEventId = eventData?.id || null;
+      els.drawerTitle.textContent = currentEventId ? '일정 수정' : '일정 추가';
+      els.deleteBtn.style.visibility = currentEventId ? 'visible' : 'hidden';
+      els.title.value = eventData?.title || '';
+      els.start.value = eventData?.startStr?.slice(0,10) || startDate || '';
+      const endValue = eventData?.endStr ? new Date(new Date(eventData.endStr).getTime() - 86400000).toISOString().slice(0,10) : (startDate || '');
+      els.end.value = currentEventId ? endValue : (startDate || '');
+      els.category.value = eventData?.extendedProps?.category || '이사';
+      els.owner.value = eventData?.extendedProps?.owner || '같이';
+      els.priority.value = eventData?.extendedProps?.priority || '보통';
+      els.vendor.value = eventData?.extendedProps?.vendor || '';
+      els.detail.value = eventData?.extendedProps?.detail || '';
+      els.done.checked = !!eventData?.extendedProps?.done;
+      els.drawer.classList.add('open');
+      els.backdrop.classList.add('open');
+      els.drawer.setAttribute('aria-hidden', 'false');
+    }
+
+    function closeDrawer() {
+      els.drawer.classList.remove('open');
+      els.backdrop.classList.remove('open');
+      els.drawer.setAttribute('aria-hidden', 'true');
+    }
+
+    function reloadCalendar() {
+      calendar.removeAllEvents();
+      getEvents().forEach(ev => calendar.addEvent(ev));
+      updateSummary();
+    }
+
+    function saveEvent() {
+      const payload = {
+        id: currentEventId || String(Date.now()),
+        title: els.title.value.trim(),
+        start: els.start.value,
+        end: new Date(new Date(els.end.value || els.start.value).getTime() + 86400000).toISOString().slice(0,10),
+        allDay: true,
+        extendedProps: {
+          category: els.category.value,
+          owner: els.owner.value,
+          priority: els.priority.value,
+          vendor: els.vendor.value.trim(),
+          detail: els.detail.value.trim(),
+          done: els.done.checked
+        }
+      };
+      if (!payload.title || !payload.start) return alert('일정명과 시작일은 필수입니다.');
+      const idx = sampleEvents.findIndex(e => e.id === payload.id);
+      if (idx > -1) sampleEvents[idx] = payload; else sampleEvents.push(payload);
+      reloadCalendar();
+      closeDrawer();
+    }
+
+    function deleteEvent() {
+      if (!currentEventId) return;
+      const idx = sampleEvents.findIndex(e => e.id === currentEventId);
+      if (idx > -1) sampleEvents.splice(idx, 1);
+      reloadCalendar();
+      closeDrawer();
+    }
+
+    function applyTheme() {
+      const root = document.documentElement;
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      root.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+    }
+
+    document.getElementById('themeToggle').addEventListener('click', () => {
+      const root = document.documentElement;
+      root.setAttribute('data-theme', root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+    });
+    document.getElementById('fabAdd').addEventListener('click', () => openDrawer(null, new Date().toISOString().slice(0,10)));
+    document.getElementById('quickAddBtn').addEventListener('click', () => openDrawer(null, new Date().toISOString().slice(0,10)));
+    document.getElementById('closeDrawer').addEventListener('click', closeDrawer);
+    els.backdrop.addEventListener('click', closeDrawer);
+    document.getElementById('saveBtn').addEventListener('click', saveEvent);
+    document.getElementById('deleteBtn').addEventListener('click', deleteEvent);
+
+    applyTheme();
+    renderFilters();
+    renderLegend();
+    updateSummary();
+
+    calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
+      initialView: 'dayGridMonth',
+      locale: 'ko',
+      height: 'auto',
+      headerToolbar: { left: 'prev,next today', center: 'title', right: '' },
+      selectable: true,
+      dayMaxEvents: 2,
+      events: getEvents(),
+      select: (info) => openDrawer(null, info.startStr),
+      eventClick: (info) => openDrawer(info.event),
+      eventDidMount: (info) => {
+        info.el.style.opacity = info.event.extendedProps.done ? '0.92' : '1';
+      }
+    });
+    calendar.render();
+  </script>
 </body>
 </html>
